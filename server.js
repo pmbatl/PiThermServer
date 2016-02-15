@@ -1,6 +1,6 @@
 // server.js - NodeJS server for the PiThermServer project.
 
-/* 
+/*
 
 Parses data from DS18B20 temperature sensor and serves as a JSON object.
 Uses node-static module to serve a plot of current temperature (uses highcharts).
@@ -14,6 +14,7 @@ var fs = require('fs');
 var sys = require('sys');
 var http = require('http');
 var sqlite3 = require('sqlite3');
+var util = require('util')
 
 // Use node-static module to server chart for client-side dynamic graph
 var nodestatic = require('node-static');
@@ -26,20 +27,20 @@ var db = new sqlite3.Database('./piTemps.db');
 
 // Write a single temperature record in JSON format to database table.
 function insertTemp(data){
-   // data is a javascript object   
-   var statement = db.prepare("INSERT INTO temperature_records VALUES (?, ?)");
+   // data is a javascript object
+   var statement = db.prepare("INSERT INTO temperature_records VALUES (?, ?, ?)");
    // Insert values into prepared statement
-   statement.run(data.temperature_record[0].unix_time, data.temperature_record[0].celsius);
+   statement.run(data.temperature_record[0].unix_time, data.temperature_record[0].celsius, data.temperature_record[0].fahrenheit);
    // Execute the statement
    statement.finalize();
 }
 
 // Read current temperature from sensor
 function readTemp(callback){
-   fs.readFile('/sys/bus/w1/devices/28-00000400a88a/w1_slave', function(err, buffer)
+   fs.readFile('/sys/bus/w1/devices/28-0315044a67ff/w1_slave', function(err, buffer)
 	{
       if (err){
-         console.error(err);
+         util.error(err);
          process.exit(1);
       }
 
@@ -52,11 +53,19 @@ function readTemp(callback){
       // Round to one decimal place
       temp = Math.round(temp * 10) / 10;
 
+      // Convert celsius to fahrenheit
+      var temp_f = temp * 9.0 / 5.0 + 32.0
+
+      // Round to one decimal place
+      temp_f = Math.round(temp_f * 10) / 10;
+
+
       // Add date/time to temperature
    	var data = {
             temperature_record:[{
             unix_time: Date.now(),
-            celsius: temp
+            celsius: temp,
+            fahrenheit: temp_f
             }]};
 
       // Execute call back with data
@@ -74,8 +83,8 @@ function logTemp(interval){
 
 // Get temperature records from database
 function selectTemp(num_records, start_date, callback){
-   // - Num records is an SQL filter from latest record back trough time series, 
-   // - start_date is the first date in the time-series required, 
+   // - Num records is an SQL filter from latest record back trough time series,
+   // - start_date is the first date in the time-series required,
    // - callback is the output function
    var current_temp = db.all("SELECT * FROM (SELECT * FROM temperature_records WHERE unix_time > (strftime('%s',?)*1000) ORDER BY unix_time DESC LIMIT ?) ORDER BY unix_time;", start_date, num_records,
       function(err, rows){
@@ -114,27 +123,27 @@ var server = http.createServer(
             var start_date = query.start_date;
          }
          else{
-            var start_date = '1970-01-01T00:00';
-         }   
+            var start_date = '2016-01-31T00:00';
+         }
          // Send a message to console log
-         console.log('Database query request from '+ request.connection.remoteAddress +' for ' + num_obs + ' records from ' + start_date+'.');
+         util.log('Database query request from '+ request.connection.remoteAddress +' for ' + num_obs + ' records from ' + start_date+'.');
          // call selectTemp function to get data from database
          selectTemp(num_obs, start_date, function(data){
-            response.writeHead(200, { "Content-type": "application/json" });		
+            response.writeHead(200, { "Content-type": "application/json" });
 	         response.end(JSON.stringify(data), "ascii");
          });
       return;
       }
-      
-      // Test to see if it's a request for current temperature   
+
+      // Test to see if it's a request for current temperature
       if (pathfile == '/temperature_now.json'){
             readTemp(function(data){
-			      response.writeHead(200, { "Content-type": "application/json" });		
+			      response.writeHead(200, { "Content-type": "application/json" });
 			      response.end(JSON.stringify(data), "ascii");
                });
       return;
       }
-      
+
       // Handler for favicon.ico requests
 		if (pathfile == '/favicon.ico'){
 			response.writeHead(200, {'Content-Type': 'image/x-icon'});
@@ -150,18 +159,18 @@ var server = http.createServer(
 			// Print requested file to terminal
 			console.log('Request from '+ request.connection.remoteAddress +' for: ' + pathfile);
 
-			// Serve file using node-static			
+			// Serve file using node-static
 			staticServer.serve(request, response, function (err, result) {
 					if (err){
 						// Log the error
 						sys.error("Error serving " + request.url + " - " + err.message);
-						
+
 						// Respond to the client
 						response.writeHead(err.status, err.headers);
 						response.end('Error 404 - file not found');
 						return;
 						}
-					return;	
+					return;
 					})
 		}
 });
@@ -170,8 +179,8 @@ var server = http.createServer(
 var msecs = (60 * 5) * 1000; // log interval duration in milliseconds
 logTemp(msecs);
 // Send a message to console
-console.log('Server is logging to database at '+msecs+'ms intervals');
+util.log('Server is logging to database at '+msecs+'ms intervals');
 // Enable server
 server.listen(8000);
 // Log message
-console.log('Server running at http://localhost:8000');
+util.log('Server running at http://localhost:8000');
