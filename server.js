@@ -28,9 +28,9 @@ var db = new sqlite3.Database('./piTemps.db');
 // Write a single temperature record in JSON format to database table.
 function insertTemp(data){
    // data is a javascript object
-   var statement = db.prepare("INSERT INTO temperature_records VALUES (?, ?, ?)");
+   var statement = db.prepare("INSERT INTO temperature_records VALUES (?, ?, ?, ?)");
    // Insert values into prepared statement
-   statement.run(data.temperature_record[0].unix_time, data.temperature_record[0].celsius, data.temperature_record[0].fahrenheit);
+   statement.run(data.temperature_record[0].unix_time, data.temperature_record[0].therm1, data.temperature_record[0].therm2, data.temperature_record[0].therm3);
    // Execute the statement
    statement.finalize();
 }
@@ -48,24 +48,22 @@ function readTemp(callback){
       var data = buffer.toString('ascii').split(" "); // Split by space
 
       // Extract temperature from string and divide by 1000 to give celsius
-      var temp  = parseFloat(data[data.length-1].split("=")[1])/1000.0;
-
-      // Round to one decimal place
-      temp = Math.round(temp * 10) / 10;
+      var temp_1  = parseFloat(data[data.length-1].split("=")[1])/1000.0;
 
       // Convert celsius to fahrenheit
-      var temp_f = temp * 9.0 / 5.0 + 32.0
+      var temp_1 = temp_1 * 9.0 / 5.0 + 32.0
 
       // Round to one decimal place
-      temp_f = Math.round(temp_f * 10) / 10;
+      temp_1 = Math.round(temp_1 * 10) / 10;
 
 
       // Add date/time to temperature
    	var data = {
             temperature_record:[{
             unix_time: Date.now(),
-            celsius: temp,
-            fahrenheit: temp_f
+            therm1: temp_1,
+            therm2: temp_1,
+            therm3: temp_1
             }]};
 
       // Execute call back with data
