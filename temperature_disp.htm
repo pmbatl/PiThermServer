@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Hello World introduction to Responsive Design</title>
+        <style type="text/css">
+            body {
+                background-color: #eee;
+            }
+
+            #content {
+                width: 800px;
+                margin: 0 auto;
+                background-color: white;
+                overflow: auto;
+                padding: 30px;
+            }
+
+            .three-column .col {
+                width: 250px;
+                float: left;
+                padding-right: 15px;
+            }
+
+            .instructions {
+               clear: both;
+               background-color: #ffffaa;
+               padding: 15px;
+            }
+
+            /* This is the responsive part - This media query adapts the design for low resolution screens */
+            @media only screen and (max-width:800px) {
+                #content {
+                    width: 400px;
+                }
+                .three-column .col {
+                    float: none;
+                    border-bottom: 1px solid #bbb;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div id="content">
+            <h1>Hello World introduction to Responsive Design</h1>
+            <div class="three-column">
+                <div class="col">
+                    <h2>Column 1</h2>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce id enim eget libero adipiscing elementum. Aenean feugiat faucibus blandit. Mauris ultricies tincidunt ligula.
+                    <p>Nullam mollis enim in justo dictum at laoreet erat tincidunt. Integer ante purus, feugiat sed posuere eget, dapibus ut quam. Duis fermentum euismod nisi, ac blandit lacus euismod id.</p>
+                </div>
+                <div class="col">
+                    <h2>Column 2</h2>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce id enim eget libero adipiscing elementum. Aenean feugiat faucibus blandit. Mauris ultricies tincidunt ligula.
+                    <p>Nullam mollis enim in justo dictum at laoreet erat tincidunt. Integer ante purus, feugiat sed posuere eget, dapibus ut quam. Duis fermentum euismod nisi, ac blandit lacus euismod id.</p>
+                </div>
+                <div class="col">
+                    <h2>Column 3</h2>
+                    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce id enim eget libero adipiscing elementum. Aenean feugiat faucibus blandit. Mauris ultricies tincidunt ligula.
+                    <p>Nullam mollis enim in justo dictum at laoreet erat tincidunt. Integer ante purus, feugiat sed posuere eget, dapibus ut quam. Duis fermentum euismod nisi, ac blandit lacus euismod id.</p>
+                </div>
+            </div>
+            <div class="instructions">Resize your browser's window to watch this layout transform.  When that gets boring, feel free to <a href="http://gabesumner.com/">visit my site</a>.</div>
+        </div>
+    </body>
+</html>
